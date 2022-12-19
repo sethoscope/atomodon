@@ -9,6 +9,7 @@
 import urllib.request
 import json 
 import logging
+from collections import UserDict
 from feedgen.feed import FeedGenerator
 import html.parser
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
@@ -17,16 +18,41 @@ try:
 except ImportError:
     import pickle
 
-cache = None
+
+# I use a file-backed persistent cache during development.
+# It's much faster, and I don't spam the remote server.
+class Cache(UserDict):
+    def __init__(self, filename):
+        super().__init__(self)
+        self.filename = filename
+        self.enabled = bool(filename)
+        if filename:
+            self.load()
+
+    def load(self):
+        try:
+            self.data = pickle.load(open(self.filename, 'rb'))
+            logging.debug('loaded cache')            
+        except FileNotFoundError:
+            logging.debug('new cache')
+            self.data = {}
+
+    def save(self):
+        if self.filename:
+            pickle.dump(cache, open(self.filename, 'wb'), 2)
+            logging.debug('cache saved')
+
+
 def fetch_json(url):
     global cache
-    if cache and url in cache:
+    if url in cache:
         logging.debug(f'found {url} in cache')
         return cache[url]
     logging.debug(f'fetching {url}')
     with urllib.request.urlopen(url) as response:
-        cache[url] = json.load(response)
-        return cache[url]
+        response = json.load(response)
+        cache[url] = response
+        return response
 
 
 class Person():
@@ -135,23 +161,13 @@ def main():
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    if args.cache:
-        try:
-            global cache
-            cache = pickle.load(open(args.cache, 'rb'))
-            logging.debug('loaded cache')            
-        except FileNotFoundError:
-            logging.debug('new cache')
-            cache = {}
-
+    global cache
+    cache = Cache(args.cache)
     server = args.server
     username = args.username
     person = Person(server, username)
     feed = Feed(person)
-    
-    if args.cache:
-        pickle.dump(cache, open(args.cache, 'wb'), 2)
-        logging.debug('cache saved')
+    cache.save()
 
     if args.output:
         feed.feed.atom_file(args.output)
