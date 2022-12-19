@@ -7,7 +7,7 @@
 
 
 import urllib.request
-import json 
+import json
 import logging
 from collections import UserDict
 from feedgen.feed import FeedGenerator
@@ -32,7 +32,7 @@ class Cache(UserDict):
     def load(self):
         try:
             self.data = pickle.load(open(self.filename, 'rb'))
-            logging.debug('loaded cache')            
+            logging.debug('loaded cache')
         except FileNotFoundError:
             logging.debug('new cache')
             self.data = {}
@@ -81,16 +81,20 @@ class Entry():
         return f'<a href="{tag["url"]}">#{tag["name"]}</a>'
 
     def _content(self, status):
-        c = ( '<p>'
-              f"{status['account']['display_name']}<br>\n"
-              f"@{status['account']['acct']}<br>\n"
-              f"{status['content']}"
-              '</p>'
+        c = ('<p>'
+             f"{status['account']['display_name']}<br>\n"
+             f"@{status['account']['acct']}<br>\n"
+             f"{status['content']}"
+             '</p>'
              )
         if status.get('tags', False):
-            c += "\n<p> " + ', '.join(self._format_tag(t) for t in status['tags']) + " </p>\n"
+            c += ("\n<p> "
+                  + ', '.join(self._format_tag(t) for t in status['tags'])
+                  + ' </p>\n')
         if status.get('reblog', False):
-            c += '\n<p>boosted:</p><blockquote>' + self._content(status['reblog']) + '</blockquote>'
+            c += ('\n<p>boosted:</p><blockquote>'
+                  + self._content(status['reblog'])
+                  + '</blockquote>')
         logging.debug(f'entry content: {c}')
         return c
 
@@ -122,7 +126,8 @@ class Feed():
     def fill_header(self):
         logging.debug('filling feed header info')
         self.feed.id(self.person.webfinger['url'])
-        self.feed.title(self.person.webfinger["display_name"] + "\'s Mastodon feed")
+        self.feed.title(f'{self.person.webfinger["display_name"]}'
+                        "\'s Mastodon feed")
         self.feed.author({'name': self.person.webfinger['display_name']})
         self.feed.link(href=self.person.webfinger['url'], rel='alternate')
         self.feed.image(url=self.person.webfinger['avatar'])
@@ -138,12 +143,13 @@ class Feed():
 
     @staticmethod
     def fetch_entries(server, userid):
-        url = f'https://{server}/api/v1/accounts/{userid}/statuses?exclude_replies=true'
+        url = (f'https://{server}/api/v1/accounts/{userid}'
+               f'/statuses?exclude_replies=true')
         return fetch_json(url)
 
     def add_entry(self, status):
         Entry(self.feed.add_entry(order='append'), status)
-   
+
 
 def main():
     description = ''
@@ -174,7 +180,6 @@ def main():
     else:
         # TODO: this is not working; it puts everything inside b''
         print(feed.feed.atom_str())
-    
 
 
 if __name__ == '__main__':
