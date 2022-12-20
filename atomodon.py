@@ -178,8 +178,7 @@ def main():
     if args.output:
         feed.feed.atom_file(args.output)
     else:
-        # TODO: this is not working; it puts everything inside b''
-        print(feed.feed.atom_str())
+        print(feed.feed.atom_str().decode('UTF-8'))
 
 
 if __name__ == '__main__':
