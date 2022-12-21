@@ -87,11 +87,17 @@ class Entry():
              f"{status['content']}"
              '</p>'
              )
-        if status.get('tags', False):
+
+        for m in status.get('media_attachments', []):
+            if m['type'] == 'image':
+                logging.debug(f'found image, id={m["id"]}; {m["description"]}')
+                c += f'<a href="{m["url"]}"><img src="{m["preview_url"]}" alt="{m["description"]}"></a>\n'
+
+        if status.get('tags'):
             c += ("\n<p> "
                   + ', '.join(self._format_tag(t) for t in status['tags'])
                   + ' </p>\n')
-        if status.get('reblog', False):
+        if status.get('reblog'):
             c += ('\n<p>boosted:</p><blockquote>'
                   + self._content(status['reblog'])
                   + '</blockquote>')
