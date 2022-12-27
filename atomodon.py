@@ -113,7 +113,7 @@ class Entry():
 
         def handle_data(self, data):
             logging.debug(f'HTML data : {data}')
-            self.content += data
+            self.content += data + ' '
 
     def _title(self, status, maxwords=-1):
         if status.get('reblog', False):
