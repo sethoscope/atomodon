@@ -12,6 +12,7 @@ import logging
 from collections import UserDict
 from feedgen.feed import FeedGenerator
 import html.parser
+import html
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 try:
     import cPickle as pickle
@@ -78,7 +79,8 @@ class Entry():
 
     @staticmethod
     def _format_tag(tag):
-        return f'<a href="{tag["url"]}">#{tag["name"]}</a>'
+        return (f'<a href="{html.escape(tag["url"] or "")}">'
+                f'#{html.escape(tag["name"]) or ""}</a>')
 
     def _content(self, status):
         c = ('<p>'
@@ -91,7 +93,11 @@ class Entry():
         for m in status.get('media_attachments', []):
             if m['type'] == 'image':
                 logging.debug(f'found image, id={m["id"]}; {m["description"]}')
-                c += f'<a href="{m["url"]}"><img src="{m["preview_url"]}" alt="{m["description"]}"></a>\n'
+                esc_description = html.escape(m["description"] or "")
+                esc_url = html.escape(m["url"] or "")
+                esc_preview_url = html.escape(m["preview_url"] or "")
+                c += (f'<a href="{esc_url}"><img src="{esc_preview_url}" '
+                      f'alt="{esc_description}"></a>\n')
 
         if status.get('tags'):
             c += ("\n<p> "
