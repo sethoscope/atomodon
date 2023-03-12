@@ -75,7 +75,8 @@ class Entry():
         eob.link(href=status['url'])
         eob.updated(status['created_at'])
         eob.content(self._content(status), type='html')
-        eob.title(self._title(status, maxwords=10))
+        eob.title(self._title(status, maxwords=10) or '[---]')
+        self.eob = eob
 
     @staticmethod
     def _format_tag(tag):
@@ -127,6 +128,10 @@ class Entry():
         title = self.HTMLParser().html_to_text(status["content"])
         return ' '.join(title.split()[:maxwords])
 
+    def __str__(self):
+        eob=self.eob
+        return f'Entry(title="{eob.title()}" id="{eob.id()}" updated="{eob.updated()}" link="{eob.link()}")'
+
 
 class Feed():
     def __init__(self, person):
@@ -160,8 +165,8 @@ class Feed():
         return fetch_json(url)
 
     def add_entry(self, status):
-        Entry(self.feed.add_entry(order='append'), status)
-
+        e = Entry(self.feed.add_entry(order='append'), status)
+        logging.debug(f'Added entry: {str(e)}')
 
 def main():
     description = ''
