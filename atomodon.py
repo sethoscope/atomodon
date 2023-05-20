@@ -73,6 +73,8 @@ class Entry():
     def __init__(self, eob, status):
         eob.id(status['uri'])
         eob.link(href=status['url'])
+        if status.get('reblog'):
+            eob.link(href=status['reblog']['url'], rel='via')
         eob.updated(status['created_at'])
         eob.content(self._content(status), type='html')
         eob.title(self._title(status, maxwords=10) or '[---]')
