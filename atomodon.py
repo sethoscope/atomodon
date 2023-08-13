@@ -136,8 +136,9 @@ class Entry():
         return ' '.join(title.split()[:maxwords])
 
     def __str__(self):
-        eob=self.eob
-        return f'Entry(title="{eob.title()}" id="{eob.id()}" updated="{eob.updated()}" link="{eob.link()}")'
+        eob = self.eob
+        return (f'Entry(title="{eob.title()}" id="{eob.id()}"'
+                f' updated="{eob.updated()}" link="{eob.link()}")')
 
 
 class Feed():
@@ -174,6 +175,7 @@ class Feed():
     def add_entry(self, status):
         e = Entry(self.feed.add_entry(order='append'), status)
         logging.debug(f'Added entry: {str(e)}')
+
 
 def main():
     description = ''
