@@ -124,6 +124,11 @@ class Entry():
             logging.debug(f'HTML data : {data}')
             self.content += data
 
+        def handle_starttag(self, tag, attrs):
+            logging.debug(f'HTML tag : {tag}')
+            if tag.lower() in ('br', 'p'):
+                self.content += ' '
+
     def _title(self, status, maxwords=-1):
         if status.get('reblog', False):
             return self._title(status['reblog'], maxwords)
