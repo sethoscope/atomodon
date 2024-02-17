@@ -6,7 +6,7 @@
 # 2022-12-19
 
 
-import urllib.request
+from urllib.request import urlopen, Request
 import json
 import logging
 from collections import UserDict
@@ -44,13 +44,16 @@ class Cache(UserDict):
             logging.debug('cache saved')
 
 
+VERSION='0.1'
+USER_AGENT='Atomodon/' + VERSION
 def fetch_json(url):
     global cache
     if url in cache:
         logging.debug(f'found {url} in cache')
         return cache[url]
     logging.debug(f'fetching {url}')
-    with urllib.request.urlopen(url) as response:
+    request = Request(url, headers={'User-Agent': USER_AGENT})
+    with urlopen(request) as response:
         response = json.load(response)
         cache[url] = response
         return response
